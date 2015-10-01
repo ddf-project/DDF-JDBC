@@ -35,7 +35,7 @@ object SqlCommand {
     }
 
     // Use prepareStatement to get metadata even when the resultset is empty
-    val rs: ResultSet = connection.prepareStatement(command).executeQuery()
+    val rs: ResultSet = connection.createStatement().executeQuery(command)
 
     // Get schema info
     val md = rs.getMetaData

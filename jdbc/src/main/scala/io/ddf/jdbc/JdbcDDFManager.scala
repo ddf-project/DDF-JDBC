@@ -53,6 +53,9 @@ class JdbcDDFManager(dataSourceDescriptor: DataSourceDescriptor,
     config.setMaximumPoolSize(Config.getValue(getEngine, "maxJDBCPoolSize").toInt)
     config.setPoolName(getUUID.toString)
     config.setRegisterMbeans(true)
+    // This is for pushing prepared statements to Postgres server as in
+    // https://jdbc.postgresql.org/documentation/head/server-prepare.html
+    //config.addDataSourceProperty("prepareThreshold", 0)
     new HikariDataSource(config);
   }
 
