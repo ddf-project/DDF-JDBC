@@ -114,7 +114,7 @@ class StatisticsHandler(ddf: DDF) extends AStatisticsSupporter(ddf) {
     val categoricalColumns: util.List[Schema.Column] = this.getCategoricalColumns
     val simpleSummaries: util.List[SimpleSummary] = new util.ArrayList[SimpleSummary]
     categoricalColumns.foreach { column =>
-      val sqlCmd: String = String.format("select distinct(%s) from %s where %s is not null", column.getName, "(" + this.getDDF.getTableName + ") tmp", column.getName)
+      val sqlCmd: String = String.format("select distinct(%s) from %s where %s is not null", column.getName, this.getDDF.getTableName, column.getName)
       val values: util.List[String] = ddf.getSqlHandler.sql(sqlCmd).getRows
       val summary: CategoricalSimpleSummary = new CategoricalSimpleSummary
       summary.setValues(values)

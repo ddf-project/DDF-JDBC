@@ -18,7 +18,7 @@ public class JdbcDDF extends DDF {
   }
 
   @Override public DDF copy() throws DDFException {
-    return null;
+    throw new DDFException("Unsupported operation for JDBC DDF");
   }
 
   public JdbcDDF(DDFManager manager, DDFManager defaultManagerIfNull) throws DDFException {

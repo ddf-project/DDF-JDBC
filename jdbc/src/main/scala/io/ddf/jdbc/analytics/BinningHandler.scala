@@ -64,7 +64,7 @@ class BinningHandler(ddf: DDF) extends io.ddf.analytics.ABinningHandler(ddf) {
   override def binningImpl(column: String, binningTypeString: String, numBins: Int, inputBreaks: Array[Double], includeLowest: Boolean,
                            right: Boolean): DDF = {
 
-    val colMeta = ddf.getColumn(column)
+    val colMeta = ddf.getColumn(column.toLowerCase)
 
     val binningType = BinningType.get(binningTypeString)
 
@@ -84,34 +84,44 @@ class BinningHandler(ddf: DDF) extends io.ddf.analytics.ABinningHandler(ddf) {
       }
       case _ ⇒ throw new DDFException(String.format("Binning type %s is not supported", binningTypeString))
     }
-    //    mLog.info("breaks = " + breaks.mkString(", "))
+    //   mLog.info("breaks = " + breaks.mkString(", "))
 
     var intervals = createIntervals(breaks, includeLowest, right)
 
-    val newDDF= ddf.sql2ddf(createTransformSqlCmd(column, intervals, includeLowest, right))
+    val newDDF= ddf.sql2ddf(createTransformSqlCmd(column.toLowerCase, intervals, includeLowest, right))
+    .sql2ddf(s"select * from @this where ${column.toLowerCase} IS NOT NULL")
 
     //remove single quote in intervals
     intervals = intervals.map(x ⇒ x.replace("'", ""))
-    newDDF.getSchemaHandler.setAsFactor(column).setLevels(intervals.toList.asJava)
+    newDDF.getSchemaHandler.setAsFactor(column.toLowerCase).setLevels(intervals.toList.asJava)
     newDDF
   }
 
   def createIntervals(breaks: Array[Double], includeLowest: Boolean, right: Boolean): Array[String] = {
     val decimalPlaces: Int = 2
     val formatter = new DecimalFormat("#." + Iterator.fill(decimalPlaces)("#").mkString(""))
-    var intervals: Array[String] = null
-    intervals = (0 to breaks.length - 2).map {
-      i ⇒
-        if (right)
+    val intervals: Array[String] = (0 to breaks.length - 2).map {
+      i =>
+        if (includeLowest && i == 0) {
+          if (right) {
+            "'[%s,%s]'".format(formatter.format(breaks(i)), formatter.format(breaks(i + 1)))
+          } else {
+            "'[%s,%s)'".format(formatter.format(breaks(i)), formatter.format(breaks(i + 1)))
+          }
+        } else if (right) {
           "'(%s,%s]'".format(formatter.format(breaks(i)), formatter.format(breaks(i + 1)))
-        else
-          "'[%s,%s)'".format(formatter.format(breaks(i)), formatter.format(breaks(i + 1)))
+        } else {
+          "'(%s,%s)'".format(formatter.format(breaks(i)), formatter.format(breaks(i + 1)))
+        }
     }.toArray
+
     if (includeLowest) {
-      if (right)
+      if (right) {
         intervals(0) = "'[%s,%s]'".format(formatter.format(breaks(0)), formatter.format(breaks(1)))
-      else
-        intervals(intervals.length - 1) = "'[%s,%s]'".format(formatter.format(breaks(breaks.length - 2)), formatter.format(breaks(breaks.length - 1)))
+      } else {
+        intervals(intervals.length - 1) =
+          "'[%s,%s)'".format(formatter.format(breaks(breaks.length - 2)), formatter.format(breaks(breaks.length - 1)))
+      }
     }
     mLog.info("interval labels = {}", intervals)
     intervals
@@ -133,7 +143,10 @@ class BinningHandler(ddf: DDF) extends io.ddf.analytics.ABinningHandler(ddf) {
               String.format("when ((%s > %s) and (%s <= %s)) then %s ", col, b(0), col, b(1), intervals(0))
           }
           else {
-            String.format("when ((%s >= %s) and (%s < %s)) then %s ", col, b(0), col, b(1), intervals(0))
+            if (includeLowest)
+              String.format("when ((%s >= %s) and (%s < %s)) then %s ", col, b(0), col, b(1), intervals(0))
+            else
+            String.format("when ((%s > %s) and (%s < %s)) then %s ", col, b(0), col, b(1), intervals(0))
           }
 
           // all the immediate breaks
@@ -150,9 +163,9 @@ class BinningHandler(ddf: DDF) extends io.ddf.analytics.ABinningHandler(ddf) {
           }
           else {
             if (includeLowest)
-              String.format("when ((%s >= %s) and (%s <= %s)) then %s ", col, b(b.length - 2), col, b(b.length - 1), intervals(intervals.length - 1))
-            else
               String.format("when ((%s >= %s) and (%s < %s)) then %s ", col, b(b.length - 2), col, b(b.length - 1), intervals(intervals.length - 1))
+            else
+              String.format("when ((%s > %s) and (%s < %s)) then %s ", col, b(b.length - 2), col, b(b.length - 1), intervals(intervals.length - 1))
           }
 
           // the full case expression under select
@@ -199,12 +212,14 @@ class BinningHandler(ddf: DDF) extends io.ddf.analytics.ABinningHandler(ddf) {
 
   def getQuantilesFromNumBins(colName: String, bins: Int): Array[Double] = {
     val eachInterval = 1.0 / bins
-    val probs: Array[Double] = Array.fill[Double](bins - 1)(0.0)
-    var i = 0
+    val probs: Array[Double] = Array.fill[Double](bins + 1)(0.0)
+    probs(0) = 0.00001
+    var i = 1
     while (i < bins - 1) {
       probs(i) = (i + 1) * eachInterval
       i += 1
     }
+    probs(bins) = 0.99999
     getQuantiles(colName, probs)
   }
 
