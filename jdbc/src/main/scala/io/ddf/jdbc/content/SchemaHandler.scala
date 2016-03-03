@@ -17,16 +17,6 @@ import scala.reflect.ClassTag
 class SchemaHandler(ddf: DDF) extends io.ddf.content.SchemaHandler(ddf: DDF) {
 
   @throws(classOf[DDFException])
-  override def setFactorLevelsForStringColumns(xCols: Array[String]) {
-    xCols.foreach { col =>
-      val c = this.getColumn(col)
-      if (c.getType eq Schema.ColumnType.STRING) {
-        this.setAsFactor(c.getName)
-      }
-    }
-  }
-
-  @throws(classOf[DDFException])
   override def computeFactorLevelsAndLevelCounts = {
     val columnIndexes: util.List[Integer] = new util.ArrayList[Integer]
     val columnTypes: util.List[Schema.ColumnType] = new util.ArrayList[Schema.ColumnType]
