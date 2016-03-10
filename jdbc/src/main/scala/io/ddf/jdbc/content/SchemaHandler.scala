@@ -34,7 +34,7 @@ class SchemaHandler(ddf: DDF) extends io.ddf.content.SchemaHandler(ddf: DDF) {
     for (col <- this.getColumns) {
       if (col.getColumnClass eq Schema.ColumnClass.FACTOR) {
         var colFactor: Factor[_] = col.getOptionalFactor
-        if (colFactor == null || colFactor.getLevelCounts == null || colFactor.getLevels == null) {
+        if (colFactor == null || colFactor.getLevels == null) {
           if (colFactor == null) {
             colFactor = this.setAsFactor(col.getName)
           }
