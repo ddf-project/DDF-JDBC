@@ -39,8 +39,8 @@ class MLSupporter(ddf: DDF) extends ADDFFunctionalGroupHandler(ddf) with ISuppor
     val targetColumn = ddf.getSchema.getColumns.asScala.last
     val uniqueTargetVal = if (awsModel.getMLModelType equals MLModelType.MULTICLASS) {
       ddf.setAsFactor(targetColumn.getName)
-      ddf.getSchemaHandler.computeFactorLevelsAndLevelCounts()
-      ddf.getSchema.getColumn(targetColumn.getName).getOptionalFactor.getLevels.asScala.map(value => "col_" + value + " " +
+      val factorMap = ddf.getSchemaHandler.computeLevelCounts(Array(targetColumn.getName)).get(targetColumn.getName)
+      factorMap.asScala.map(value => "col_" + value + " " +
         "float8").mkString(",")
     }
     else ""

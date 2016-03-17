@@ -95,55 +95,43 @@ trait ContentBehaviors extends BaseBehaviors {
     it should "test get factors on DDF" in {
       val ddf = l.loadMtCarsDDF()
       val schemaHandler = ddf.getSchemaHandler
-      Array(7, 8, 9, 10).foreach {
-        idx => schemaHandler.setAsFactor(idx)
+      val columnNames = Array("vs", "am", "gear", "carb")
+      columnNames.foreach {
+        col => schemaHandler.setAsFactor(col)
       }
-      schemaHandler.computeFactorLevelsAndLevelCounts()
-      val cols = Array(7, 8, 9, 10).map {
-        idx => schemaHandler.getColumn(schemaHandler.getColumnName(idx))
+      val result = schemaHandler.computeLevelCounts(columnNames)
+      val columns = columnNames.map {
+        col => schemaHandler.getColumn(col)
       }
     }
 
 
     it should "test get factors" in {
       val ddf = manager.sql2ddf("select * from ddf://adatao/mtcars")
-
       val schemaHandler = ddf.getSchemaHandler
-
-      Array(7, 8, 9, 10).foreach {
-        idx => schemaHandler.setAsFactor(idx)
+      val columnNames = Array("vs", "am", "gear", "carb")
+      columnNames.foreach {
+        col => schemaHandler.setAsFactor(col)
       }
-      schemaHandler.computeFactorLevelsAndLevelCounts()
-
-      val cols2 = Array(7, 8, 9, 10).map {
-        idx => schemaHandler.getColumn(schemaHandler.getColumnName(idx))
+      val result = schemaHandler.computeLevelCounts(columnNames)
+      val columns = columnNames.map {
+        col => schemaHandler.getColumn(col)
       }
     }
 
     it should "test NA handling" in {
       val ddf = l.loadAirlineNADDF()
       val schemaHandler = ddf.getSchemaHandler
-
+      val columnNames = Array(0, 8, 16, 17, 24, 25).map {
+        idx => schemaHandler.getColumnName(idx)
+      }
       Array(0, 8, 16, 17, 24, 25).foreach {
         idx => schemaHandler.setAsFactor(idx)
       }
-      schemaHandler.computeFactorLevelsAndLevelCounts()
+      val factorMap = schemaHandler.computeLevelCounts(columnNames)
 
       val cols = Array(0, 8, 16, 17, 24, 25).map {
         idx => schemaHandler.getColumn(schemaHandler.getColumnName(idx))
-      }
-
-      val ddf2 = manager.sql2ddf("select * from ddf://adatao/airlineWithNA")
-      //    ddf2.getRepresentationHandler.remove(classOf[RDD[_]], classOf[TablePartition])
-
-      val schemaHandler2 = ddf2.getSchemaHandler
-      Array(0, 8, 16, 17, 24, 25).foreach {
-        idx => schemaHandler2.setAsFactor(idx)
-      }
-      schemaHandler2.computeFactorLevelsAndLevelCounts()
-
-      val cols2 = Array(0, 8, 16, 17, 24, 25).map {
-        idx => schemaHandler2.getColumn(schemaHandler2.getColumnName(idx))
       }
     }
   }

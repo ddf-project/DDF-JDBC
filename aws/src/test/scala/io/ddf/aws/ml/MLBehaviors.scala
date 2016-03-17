@@ -156,7 +156,7 @@ trait MLBehaviors extends BaseBehaviors {
       val ddf: DDF = mtcarsDDF
       val targetColumn = ddf.getColumnNames.asScala.last
       ddf.setAsFactor(targetColumn)
-      ddf.getSchemaHandler.computeFactorLevelsAndLevelCounts()
+      ddf.getSchemaHandler.computeLevelCounts(targetColumn)
       val levels = ddf.getColumn(targetColumn).getOptionalFactor.getLevels.asScala
       val multiclassClassificationModel: MultiClassClassification = ddf.ML.train("MULTICLASS").getRawModel
         .asInstanceOf[MultiClassClassification]
