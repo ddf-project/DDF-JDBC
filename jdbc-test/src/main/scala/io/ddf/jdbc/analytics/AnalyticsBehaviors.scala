@@ -48,7 +48,7 @@ trait AnalyticsBehaviors extends BaseBehaviors {
 
       newDDF.getSchemaHandler.getColumn("dayofweek").getColumnClass should be(ColumnClass.FACTOR)
 
-      (newDDF.getSchemaHandler.getColumn("dayofweek").getOptionalFactor.getLevels.size >0) should be(true)
+      (newDDF.getSchemaHandler.getColumn("dayofweek").getOptionalFactor.getLevels.get().size >0) should be(true)
 
       val ddf1: DDF = ddf.binning("month", "custom", 0, Array[Double](2, 4, 6, 8), true, true)
 
