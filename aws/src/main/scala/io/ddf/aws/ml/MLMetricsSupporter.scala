@@ -24,12 +24,8 @@ class MLMetricsSupporter(ddf: DDF) extends io.ddf.ml.AMLMetricsSupporter(ddf) {
   }
 
   @throws(classOf[DDFException])
-  override def roc(predictionDDF: DDF, alpha_length: Int): RocMetric = {
-    val originalDDF = ddf
-    val model = ddf.ML.train("BINARY")
-    //wait for model
-    val predictedDDF: DDF = predictionDDF.ML.applyModel(model)
-    val predictDDFAsSql = predictedDDF.getRepresentationHandler.get(Representations.SQL_ARRAY_RESULT)
+  override def roc(alpha_length: Int): RocMetric = {
+    val predictDDFAsSql = this.getDDF().getRepresentationHandler.get(Representations.SQL_ARRAY_RESULT)
       .asInstanceOf[SqlArrayResult].result
     val matrix = Array.ofDim[Double](alpha_length, 3)
     for (count <- 1 to alpha_length) {
