@@ -8,6 +8,7 @@ import io.ddf.jdbc.{BaseBehaviors, Loader}
 import io.ddf.ml.IModel
 import org.scalatest.FlatSpec
 import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 
 trait MLBehaviors extends BaseBehaviors {
   this: FlatSpec =>
