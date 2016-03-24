@@ -103,6 +103,17 @@ trait ContentBehaviors extends BaseBehaviors {
       val columns = columnNames.map {
         col => schemaHandler.getColumn(col)
       }
+      val factorMap = schemaHandler.computeLevelCounts(columnNames)
+
+      assert(factorMap.get("vs").get("1") === 14)
+      assert(factorMap.get("vs").get("0") === 18)
+      assert(factorMap.get("am").get("1") === 13)
+      assert(factorMap.get("gear").get("4") === 12)
+
+      assert(factorMap.get("gear").get("3") === 15)
+      assert(factorMap.get("gear").get("5") === 5)
+      assert(factorMap.get("carb").get("1") === 7)
+      assert(factorMap.get("carb").get("2") === 10)
     }
 
 
@@ -117,6 +128,17 @@ trait ContentBehaviors extends BaseBehaviors {
       val columns = columnNames.map {
         col => schemaHandler.getColumn(col)
       }
+      val factorMap = schemaHandler.computeLevelCounts(columnNames)
+
+      assert(factorMap.get("vs").get("1") === 14)
+      assert(factorMap.get("vs").get("0") === 18)
+      assert(factorMap.get("am").get("1") === 13)
+      assert(factorMap.get("gear").get("4") === 12)
+
+      assert(factorMap.get("gear").get("3") === 15)
+      assert(factorMap.get("gear").get("5") === 5)
+      assert(factorMap.get("carb").get("1") === 7)
+      assert(factorMap.get("carb").get("2") === 10)
     }
 
     it should "test NA handling" in {
@@ -128,11 +150,20 @@ trait ContentBehaviors extends BaseBehaviors {
       Array(0, 8, 16, 17, 24, 25).foreach {
         idx => schemaHandler.setAsFactor(idx)
       }
-      val factorMap = schemaHandler.computeLevelCounts(columnNames)
-
       val cols = Array(0, 8, 16, 17, 24, 25).map {
         idx => schemaHandler.getColumn(schemaHandler.getColumnName(idx))
       }
+      val factorMap = schemaHandler.computeLevelCounts(columnNames)
+      val levels = schemaHandler.computeFactorLevels(cols(0).getName)
+      assert(levels.contains("2008"))
+      assert(levels.contains("2010"))
+      assert(factorMap.get(columnNames(3)).get("MCO") === 3.0)
+      assert(factorMap.get(columnNames(3)).get("TPA") === 3.0)
+      assert(factorMap.get(columnNames(3)).get("JAX") === 1.0)
+      assert(factorMap.get(columnNames(3)).get("LAS") === 3.0)
+      assert(factorMap.get(columnNames(3)).get("BWI") === 10.0)
+      assert(factorMap.get(columnNames(5)).get("0") === 9.0)
+      assert(factorMap.get(columnNames(4)).get("3") === 1.0)
     }
   }
 
