@@ -8,6 +8,7 @@ import io.ddf.jdbc.{BaseBehaviors, Loader}
 import io.ddf.ml.IModel
 import org.scalatest.FlatSpec
 import scala.collection.JavaConverters._
+import scala.collection.JavaConversions._
 
 trait MLBehaviors extends BaseBehaviors {
   this: FlatSpec =>
@@ -127,7 +128,7 @@ trait MLBehaviors extends BaseBehaviors {
 
     it should "do roc computation" in {
       val ddf: DDF = mtcarsDDF
-      val rocMetric = ddf.getMLMetricsSupporter.roc(ddf, 10000)
+      val rocMetric = ddf.getMLMetricsSupporter.roc(10000)
       rocMetric.pred foreach (row => println(row.mkString(",")))
       assert(!(rocMetric.auc < 0))
     }
@@ -156,8 +157,7 @@ trait MLBehaviors extends BaseBehaviors {
       val ddf: DDF = mtcarsDDF
       val targetColumn = ddf.getColumnNames.asScala.last
       ddf.setAsFactor(targetColumn)
-      ddf.getSchemaHandler.computeFactorLevelsAndLevelCounts()
-      val levels = ddf.getColumn(targetColumn).getOptionalFactor.getLevels.asScala
+      val levels = ddf.getSchemaHandler.computeLevelCounts(targetColumn)
       val multiclassClassificationModel: MultiClassClassification = ddf.ML.train("MULTICLASS").getRawModel
         .asInstanceOf[MultiClassClassification]
       val predictedLabel = multiclassClassificationModel.predict(Seq(21.0, 6, 160.0, 110, 3.90, 2.620, 16.46, 0, 1, 4))
