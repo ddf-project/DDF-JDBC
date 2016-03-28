@@ -249,6 +249,10 @@ class JdbcDDFManager(dataSourceDescriptor: DataSourceDescriptor,
     connectionPool.shutdown()
   }
 
+  override def copyFrom(ddf: DDF): DDF = {
+    throw new DDFException(new UnsupportedOperationException())
+  }
+
   override def createDDF(options: util.Map[AnyRef, AnyRef]): DDF = {
     val query = if (options.containsKey("query")) {
       options.get("query").toString
