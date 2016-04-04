@@ -10,7 +10,7 @@ import com.zaxxer.hikari.{HikariConfig, HikariDataSource}
 import io.ddf.DDFManager.EngineType
 import io.ddf.content.Schema
 import io.ddf.content.Schema.Column
-import io.ddf.datasource.{DataSourceDescriptor, DataSourceURI, JDBCDataSourceCredentials, SQLDataSourceDescriptor}
+import io.ddf.datasource.{DataSourceDescriptor, DataSourceURI, JDBCDataSourceCredentials, JDBCDataSourceDescriptor, SQLDataSourceDescriptor}
 import io.ddf.ds.DataSourceCredential
 import io.ddf.exception.{DDFException, InvalidDataSourceCredentialException}
 import io.ddf.jdbc.content._
@@ -21,7 +21,7 @@ import io.ddf.{DDF, DDFManager}
 
 import scala.util.{Failure, Success, Try}
 
-class JdbcDDFManager(dataSourceDescriptor: DataSourceDescriptor,
+class JdbcDDFManager(dataSourceDescriptor: JDBCDataSourceDescriptor,
                      engineType: EngineType,
                      uri: String)
   extends DDFManager {
@@ -38,7 +38,7 @@ class JdbcDDFManager(dataSourceDescriptor: DataSourceDescriptor,
   addRTK()
   lazy val connectionPool = initializeConnectionPool(getConnectionPoolConfig)
 
-  def this(dataSourceDescriptor: DataSourceDescriptor, engineType: EngineType) {
+  def this(dataSourceDescriptor: JDBCDataSourceDescriptor, engineType: EngineType) {
     this(dataSourceDescriptor, engineType, null)
   }
 

@@ -7,18 +7,19 @@ import io.ddf.content.Schema
 import io.ddf.content.Schema.Column
 import io.ddf.content.Schema.ColumnType
 import io.ddf.datasource.DataSourceDescriptor
+import io.ddf.datasource.JDBCDataSourceDescriptor
 import io.ddf.DDFManager.EngineType
 import io.ddf.jdbc.JdbcDDFManager
 import io.ddf.jdbc.content.{Catalog, SqlArrayResultCommand}
 import io.ddf.jdbc.utils.Utils
 import scalikejdbc.{DB, SQL}
 
-class PostgresDDFManager(dataSourceDescriptor: DataSourceDescriptor,
+class PostgresDDFManager(dataSourceDescriptor: JDBCDataSourceDescriptor,
                          engineType: EngineType,
                          uri: String)
   extends JdbcDDFManager(dataSourceDescriptor, engineType, uri) {
 
-  def this(dataSourceDescriptor: DataSourceDescriptor, engineType: EngineType) {
+  def this(dataSourceDescriptor: JDBCDataSourceDescriptor, engineType: EngineType) {
     this(dataSourceDescriptor, engineType, null)
   }
 
