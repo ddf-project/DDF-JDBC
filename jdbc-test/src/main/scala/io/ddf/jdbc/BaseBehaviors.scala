@@ -122,6 +122,22 @@ trait Loader {
     ddf
   }
 
+  def CAR_OWNER_CREATE = "CREATE TABLE carowner (name varchar, cyl int, disp decimal)"
+
+  def loadCarOwnerDDF(): DDF = {
+    var ddf: DDF = null
+    try {
+      ddf = jdbcDDFManager.getDDFByName("carowner")
+    } catch {
+      case e: Exception =>
+        dropTableIfExists("carowner")
+        jdbcDDFManager.create(CAR_OWNER_CREATE)
+        val filePath = getClass.getResource("/carowner").getPath
+        jdbcDDFManager.load("load '" + filePath + "'  delimited by ' '  into carowner")
+        ddf = jdbcDDFManager.getDDFByName("carowner")
+    }
+    ddf
+  }
 
 }
 
