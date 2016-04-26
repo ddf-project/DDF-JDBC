@@ -13,45 +13,49 @@ import scala.collection.JavaConversions._
 class JoinHandler(ddf: DDF) extends ADDFFunctionalGroupHandler(ddf) with IHandleJoins {
 
   @throws(classOf[DDFException])
-  override def join(anotherDDF: DDF, joinTypeParam: JoinType, byColumns: util.List[String], byLeftColumns: util.List[String], byRightColumns: util.List[String]): DDF = {
+  override def join(anotherDDF: DDF, joinTypeParam: JoinType, byColumns: util.List[String],
+                    byLeftColumns: util.List[String], byRightColumns: util.List[String]): DDF = {
+    this.join(anotherDDF, joinTypeParam, byColumns, byLeftColumns, byRightColumns, null, null)
+  }
+
+  @throws(classOf[DDFException])
+  override def join(anotherDDF: DDF, joinTypeParam: JoinType, byColumns: util.List[String],
+                    byLeftColumns: util.List[String], byRightColumns: util.List[String],
+                    leftSuffixParam: String, rightSuffixParam: String): DDF = {
     val joinType = if (joinTypeParam == null) JoinType.INNER else joinTypeParam
     val leftTableName: String = getDDF.getUri
     val rightTableName: String = anotherDDF.getUri
-    val rightColumnNameSet: util.HashSet[String] = new util.HashSet[String]()
-    rightColumnNameSet.addAll(anotherDDF.getSchema.getColumns.map(_.getName))
+    val rightColumns: util.List[String] = anotherDDF.getSchema.getColumns.map(_.getName)
+    val leftColumns: util.List[String] = getDDF.getSchema.getColumns.map(_.getName)
 
-    var columnString: String = ""
+    var joinConditionString: String = ""
     if (byColumns != null && byColumns.nonEmpty) {
-      var i: Int = 0
-      while (i < byColumns.size) {
-        columnString += String.format("lt.%s = rt.%s AND ", byColumns.get(i), byColumns.get(i))
-        rightColumnNameSet.remove(byColumns.get(i))
-        i = i + 1
-      }
+      byColumns.foreach(col => joinConditionString += String.format("lt.%s = rt.%s AND ", col, col))
     }
     else {
       if (byLeftColumns != null && byRightColumns != null && byLeftColumns.size == byRightColumns.size && byLeftColumns.nonEmpty) {
-        var i: Int = 0
-        while (i < byLeftColumns.size) {
-          columnString += String.format("lt.%s = rt.%s AND ", byLeftColumns.get(i), byRightColumns.get(i))
-          rightColumnNameSet.remove(byRightColumns.get(i))
-          i = i + 1
-        }
+        for ( (leftCol, rightCol) <- byLeftColumns zip byRightColumns ) yield {joinConditionString += String.format("lt.%s = rt.%s AND ", leftCol, rightCol)}
       }
       else {
         throw new DDFException(String.format("Left and right column specifications are missing or not compatible"), null)
       }
     }
-    columnString = columnString.substring(0, columnString.length - 5)
+    joinConditionString = joinConditionString.substring(0, joinConditionString.length - 5)
 
-    val rightSelectColumns: String = rightColumnNameSet.map(name => String.format("rt.%s AS r_%s", name, name)).mkString(",")
+    // Add suffix to overlapping columns, use default if not provided
+    val leftSuffix = if (leftSuffixParam == null || leftSuffixParam.trim.isEmpty) "_l" else leftSuffixParam
+    var rightSuffix = if (rightSuffixParam == null || rightSuffixParam.trim.isEmpty) "_r" else rightSuffixParam
+
+    val leftSelectColumns = generateSelectColumns(leftColumns, rightColumns, "lt", leftSuffix)
+    val rightSelectColumns = generateSelectColumns(rightColumns, leftColumns, "rt", rightSuffix)
 
     val executeCommand =
       if (JoinType.LEFTSEMI equals joinType) {
-        String.format("SELECT lt.* FROM %s lt %s JOIN %s rt ON (%s)", leftTableName, joinType.getStringRepr, rightTableName, columnString)
+        String.format("SELECT lt.* FROM %s lt %s JOIN %s rt ON (%s)", leftTableName, joinType.getStringRepr, rightTableName, joinConditionString)
       }
       else {
-        String.format("SELECT lt.*,%s FROM %s lt %s JOIN %s rt ON (%s)", rightSelectColumns, leftTableName, joinType.getStringRepr, rightTableName, columnString)
+        String.format("SELECT %s,%s FROM %s lt %s JOIN %s rt ON (%s)", leftSelectColumns, rightSelectColumns, leftTableName, joinType.getStringRepr,
+          rightTableName, joinConditionString)
       }
     this.getManager.sql2ddf(executeCommand)
   }
@@ -59,5 +63,28 @@ class JoinHandler(ddf: DDF) extends ADDFFunctionalGroupHandler(ddf) with IHandle
   override def merge(anotherDDF: DDF): DDF = {
     val sql = String.format("SELECT * from %s UNION ALL SELECT * from %s", ddf.getUri, anotherDDF.getTableName)
     ddf.sql2ddf(sql)
+  }
+
+  private def generateSelectColumns(targetColumns: util.List[String], filterColumnsParam: util.List[String], columnId: String, suffix: String): String = {
+    var selectColumns: String = ""
+    if (targetColumns == null) {
+      selectColumns
+    }
+
+    val filterColumns = if (filterColumnsParam == null) new util.ArrayList[String] else filterColumnsParam
+
+    targetColumns.foreach(colName =>
+      if (filterColumns.contains(colName)) {
+        selectColumns += String.format("%s.%s AS %s%s,", columnId, colName, colName, suffix)
+      }
+      else {
+        selectColumns += String.format("%s.%s,", columnId, colName)
+      }
+    )
+    if (selectColumns.length > 0) {
+      selectColumns = selectColumns.substring(0, selectColumns.length - 1)
+    }
+
+    selectColumns
   }
 }

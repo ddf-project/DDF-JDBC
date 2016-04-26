@@ -23,6 +23,8 @@ trait ETLBehaviors extends BaseBehaviors {
   def ddfWithBasicJoinSupport(implicit l: Loader): Unit = {
     val airlineDDF = l.loadAirlineDDF()
     val yearNamesDDF = l.loadYearNamesDDF()
+    val mtcatsDDF = l.loadMtCarsDDF()
+    val carownerDDF = l.loadCarOwnerDDF()
 
     it should "inner join tables" in {
       val ddf: DDF = airlineDDF
@@ -37,8 +39,26 @@ trait ETLBehaviors extends BaseBehaviors {
       val colNames = asBetterList(joinedDDF.getSchema.getColumnNames)
       colNames.containsIgnoreCase("YEAR") should be(true)
       //check if the names from second ddf have been added to the schema
-      colNames.containsIgnoreCase("R_NAME") should be(true)
+      colNames.containsIgnoreCase("NAME") should be(true)
 
+    }
+
+    it should "join left/right suffix" in {
+      val ddf: DDF = mtcatsDDF
+      val ddf2: DDF = carownerDDF
+      val joinedDDF = ddf.join(ddf2, JoinType.INNER, Collections.singletonList("cyl"), null, null, "_left", "_right")
+      val rep = joinedDDF.getRepresentationHandler.get(Representations.SQL_ARRAY_RESULT).asInstanceOf[SqlArrayResult]
+      val collection = rep.result
+      collection.foreach(i => println("[" + i.mkString(",") + "]"))
+      val list = seqAsJavaList(joinedDDF.sql("SELECT DISTINCT cyl_left FROM " + joinedDDF.getUri, "Error").getRows)
+      list.size should be(2) // only 2 values i.e 6 and 4
+      rep.schema.getNumColumns should be(14)
+      collection.size should be(25)
+      val colNames = asBetterList(joinedDDF.getSchema.getColumnNames)
+      colNames.containsIgnoreCase("cyl_left") should be(true)
+      colNames.containsIgnoreCase("cyl_right") should be(true)
+      colNames.containsIgnoreCase("disp_left") should be(true)
+      colNames.containsIgnoreCase("disp_right") should be(true)
     }
 
 
@@ -56,7 +76,7 @@ trait ETLBehaviors extends BaseBehaviors {
       val colNames = asBetterList(joinedDDF.getSchema.getColumnNames)
       colNames.containsIgnoreCase("YEAR") should be(true)
       //check if the names from second ddf have been added to the schema
-      colNames.containsIgnoreCase("R_NAME") should be(true)
+      colNames.containsIgnoreCase("NAME") should be(true)
     }
   }
 
@@ -79,7 +99,7 @@ trait ETLBehaviors extends BaseBehaviors {
       val colNames = asBetterList(joinedDDF.getSchema.getColumnNames)
       colNames.containsIgnoreCase("YEAR") should be(true)
       //check if the names from second ddf have been added to the schema
-      colNames.containsIgnoreCase("R_NAME") should be(false)
+      colNames.containsIgnoreCase("NAME") should be(false)
 
     }
   }
@@ -102,7 +122,7 @@ trait ETLBehaviors extends BaseBehaviors {
       val colNames = asBetterList(joinedDDF.getSchema.getColumnNames)
       colNames.containsIgnoreCase("YEAR") should be(true)
       //check if the names from second ddf have been added to the schema
-      colNames.containsIgnoreCase("R_NAME") should be(true)
+      colNames.containsIgnoreCase("NAME") should be(true)
 
     }
   }
@@ -126,7 +146,7 @@ trait ETLBehaviors extends BaseBehaviors {
       val colNames = asBetterList(joinedDDF.getSchema.getColumnNames)
       colNames.containsIgnoreCase("YEAR") should be(true)
       //check if the names from second ddf have been added to the schema
-      colNames.containsIgnoreCase("R_NAME") should be(true)
+      colNames.containsIgnoreCase("NAME") should be(true)
     }
   }
 
