@@ -36,7 +36,7 @@ class ViewHandler(ddf: DDF) extends io.ddf.content.ViewHandler(ddf) {
     this.getDDF
   }
 
-  override def getRandomSampleByNum(numSamples: Int, withReplaement: Boolean,
+  override def getRandomSampleByNum(numSamples: Long, withReplacement: Boolean,
                                     seed: Int): DDF = {
     if (numSamples > MAX_SAMPLE_SIZE) {
       throw new IllegalArgumentException("Number of samples is currently " +
