@@ -85,7 +85,7 @@ lazy val aws = project.in(file("aws")).dependsOn(jdbc,postgres,jdbcTest % "test-
   name := "ddf-jdbc-aws",
   pomExtra := submodulePom,
   libraryDependencies ++= Seq(
-    "com.amazonaws" % "aws-java-sdk" % "1.7.4"
+    "com.amazonaws" % "aws-java-sdk" % "1.10.8"
   )
 )
 
