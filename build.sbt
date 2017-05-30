@@ -40,11 +40,6 @@ lazy val jdbcAssemblySettings = Seq(
 
 lazy val root = project.in(file(".")).aggregate(jdbc, jdbcExamples,jdbcTest,postgres,aws)
 
-val com_adatao_unmanaged = Seq(
-  "com.adatao.unmanaged.net.rforge" % "REngine" % "2.1.1.compiled",
-  "com.adatao.unmanaged.net.rforge" % "Rserve" % "1.8.2.compiled"
-)
-
 ivyScala := ivyScala.value map { _.copy(overrideScalaVersion = true) }
 
 lazy val jdbc = project.in(file("jdbc")).settings(commonSettings: _*).settings(jdbcAssemblySettings:_*).settings(
