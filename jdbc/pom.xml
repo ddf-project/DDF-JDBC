@@ -109,4 +109,12 @@
             </exclusions>
         </dependency>
     </dependencies>
+    <repositories>
+        <repository>
+            <id>jcenter</id>
+            <name>jcenter</name>
+            <url>https://jcenter.bintray.com/</url>
+            <layout>default</layout>
+        </repository>
+    </repositories>
 </project>
