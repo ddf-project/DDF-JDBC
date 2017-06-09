@@ -5,7 +5,7 @@
     <artifactId>ddf-jdbc_2.10</artifactId>
     <packaging>jar</packaging>
     <description>ddf-jdbc</description>
-    <version>1.4.19</version>
+    <version>1.4.19.3</version>
     <name>ddf-jdbc</name>
     <organization>
         <name>io.ddf</name>
@@ -18,7 +18,7 @@
     <parent>
         <groupId>io</groupId>
         <artifactId>ddf</artifactId>
-        <version>1.4.19</version>
+        <version>1.4.19.3</version>
     </parent>
     <build>
         <plugins>
@@ -79,7 +79,7 @@
         <dependency>
             <groupId>io.ddf</groupId>
             <artifactId>ddf_core_2.10</artifactId>
-            <version>1.4.19</version>
+            <version>1.4.19.3</version>
             <scope>provided</scope>
         </dependency>
         <dependency>
@@ -109,12 +109,4 @@
             </exclusions>
         </dependency>
     </dependencies>
-    <repositories>
-        <repository>
-            <id>jcenter</id>
-            <name>jcenter</name>
-            <url>https://jcenter.bintray.com/</url>
-            <layout>default</layout>
-        </repository>
-    </repositories>
 </project>
